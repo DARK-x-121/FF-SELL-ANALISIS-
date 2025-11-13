@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>FF Sell Analysis — By DARK</title>
+<!-- Simple styling -->
+<style>
+  :root{--accent:#0b73ff;--danger:#e03a3a}
+  body{font-family:Inter,system-ui,Arial,Helvetica,sans-serif;background:#f6f8fb;color:#111;margin:0;padding:20px}
+  .container{max-width:980px;margin:0 auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 6px 30px rgba(30,40,60,0.06)}
+  h1{margin:0 0 6px;font-size:22px}
+  p.lead{margin:0 0 18px;color:#555}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .slot{background:#fbfdff;border:2px dashed #dbe7ff;border-radius:8px;padding:8px;text-align:center;min-height:120px;position:relative;overflow:hidden}
+  .slot input{display:block;margin:8px auto}
+  .slot img{max-width:100%;max-height:110px;object-fit:contain;border-radius:6px}
+  label.small{display:block;font-size:12px;color:#666;margin-bottom:6px}
+  button{background:var(--accent);color:#fff;border:0;padding:10px 14px;border-radius:8px;cursor:pointer}
+  button.ghost{background:#eef3ff;color:var(--accent);border:1px solid #d8e8ff}
+  .row{display:flex;gap:10px;align-items:center;margin-top:12px}
+  .result{margin-top:18px;padding:14px;border-radius:10px;background:#fbfbff;border:1px solid #eef3ff}
+  ul.break{margin:8px 0 0;padding-left:18px}
+  .error{border-color:var(--danger);box-shadow:0 0 0 4px rgba(224,58,58,0.06)}
+  .smalltxt{font-size:13px;color:#666}
+  .field{display:flex;gap:8px;align-items:center;margin-top:8px}
+  input[type="number"]{width:90px;padding:8px;border-radius:8px;border:1px solid #ddd}
+  .conf{font-size:12px;color:#777}
+  .badge{display:inline-block;background:#eef7ff;color:var(--accent);padding:6px 8px;border-radius:10px;font-weight:600}
+  footer{margin-top:18px;color:#666;font-size:13px}
+  .danger-text{color:var(--danger);font-weight:700}
+  .whatsapp{display:inline-flex;gap:8px;align-items:center;background:#25D366;padding:10px 12px;border-radius:10px;color:#fff;text-decoration:none}
+  .muted{color:#888;font-size:13px}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>FF Sell Analysis — By DARK</h1>
+  <p class="lead">Upload exactly <strong>6 screenshots</strong> in this order. We'll attempt auto-detection for level & age. For other sections you can accept auto-suggestion or override manually. Honest estimates — final price is negotiable with admin.</p>
+
+  <div class="grid" id="uploader">
+    <div class="slot" data-i="0">
+      <label class="small">1) Account screenshot</label>
+      <input type="file" accept="image/*" class="file" />
+      <div class="hint smalltxt">Shows level, name</div>
+    </div>
+    <div class="slot" data-i="1">
+      <label class="small">2) All guns section</label>
+      <input type="file" accept="image/*" class="file" />
+      <div class="hint smalltxt">Gun skins / rarities</div>
+    </div>
+    <div class="slot" data-i="2">
+      <label class="small">3) Prime badge</label>
+      <input type="file" accept="image/*" class="file" />
+      <div class="hint smalltxt">Prime badge area</div>
+    </div>
+    <div class="slot" data-i="3">
+      <label class="small">4) Emote section</label>
+      <input type="file" accept="image/*" class="file" />
+      <div class="hint smalltxt">Emotes grid</div>
+    </div>
+    <div class="slot" data-i="4">
+      <label class="small">5) Bundles / Dress</label>
+      <input type="file" accept="image/*" class="file" />
+      <div class="hint smalltxt">Bundles / exclusive outfits</div>
+    </div>
+    <div class="slot" data-i="5">
+      <label class="small">6) Achievements / Account age</label>
+      <input type="file" accept="image/*" class="file" />
+      <div class="hint smalltxt">Shows account age or achievements</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <button id="analyzeBtn">Analyze Now</button>
+    <button id="autoFillBtn" class="ghost">Try auto-read (OCR for Level & Age)</button>
+    <div style="flex:1"></div>
+    <div class="badge">MVP — Client-side</div>
+  </div>
+
+  <div id="manualInputs" style="margin-top:14px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div style="min-width:220px">
+        <div class="smalltxt">Detected / Manual: <strong>Account Level</strong></div>
+        <div class="field">
+          <input type="number" id="levelInput" placeholder="e.g. 66" min="0" />
+          <div class="conf" id="levelConf">—</div>
+        </div>
+      </div>
+
+      <div style="min-width:220px">
+        <div class="smalltxt">Detected / Manual: <strong>Account Age (years)</strong></div>
+        <div class="field">
+          <input type="number" id="ageInput" placeholder="e.g. 5" min="0" />
+          <div class="conf" id="ageConf">—</div>
+        </div>
+      </div>
+
+      <div style="min-width:220px">
+        <div class="smalltxt"><strong>Guns value estimate</strong> (auto-suggest or manual)</div>
+        <div class="field">
+          <input type="number" id="gunsValue" placeholder="e.g. 300" min="0" />
+          <div class="conf">₹ / estimated</div>
+        </div>
+      </div>
+
+      <div style="min-width:220px">
+        <div class="smalltxt"><strong>Prime badges</strong> (count)</div>
+        <div class="field">
+          <input type="number" id="primeCount" placeholder="e.g. 4" min="0" />
+          <div class="conf">count</div>
+        </div>
+      </div>
+
+      <div style="min-width:220px">
+        <div class="smalltxt"><strong>Emotes</strong> (count)</div>
+        <div class="field">
+          <input type="number" id="emoteCount" placeholder="e.g. 29" min="0" />
+          <div class="conf">count</div>
+        </div>
+      </div>
+
+      <div style="min-width:220px">
+        <div class="smalltxt"><strong>Bundles</strong> (count)</div>
+        <div class="field">
+          <input type="number" id="bundleCount" placeholder="e.g. 2" min="0" />
+          <div class="conf">count</div>
+        </div>
+      </div>
+    </div>
+    <div class="smalltxt" style="margin-top:10px">Tip: If auto-detection fails, fill numbers manually. The tool will validate missing fields and highlight errors in red.</div>
+  </div>
+
+  <div id="resultArea"></div>
+
+  <footer>
+    <div class="muted">Admin WhatsApp: <strong>+91 9836942455</strong></div>
+    <div style="margin-top:6px" class="muted">Disclaimer: Client-side estimate only. For reliable market price we recommend server-side analysis and a real marketplace price feed. This page is an MVP to speed up workflow.</div>
+  </footer>
+</div>
+
+<!-- Tesseract.js for client OCR (CDN) -->
+<script src="https://unpkg.com/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+
+<script>
+/*
+ Single-file MVP analysis:
+ - Attempts OCR (Tesseract) on slot 0 (account) for level-like numbers and slot 5 (achievements) for age.
+ - Other values are manual inputs or manually estimated by admin later.
+ - Pricing formula (editable below).
+*/
+
+// ADMIN NUMBER (pre-filled)
+const ADMIN_NUMBER = '+919836942455';
+
+// Pricing weights (tune these later)
+const WEIGHTS = {
+  level_rate: 0.75,      // ₹ per level -> we'll scale to match example: level 66 => ~50
+  prime_per: 7.5,        // ₹ per prime badge
+  emote_per: 1.7,        // ₹ per emote
+  bundle_per: 15,        // ₹ per bundle
+  age_per: 10,           // ₹ per year
+  extra_fee: 100,        // flat extra
+  guns_estimate: 1.0     // if user inputs gunsValue, we use it directly
+};
+
+// helper to set image preview on upload
+document.querySelectorAll('.slot').forEach(slot=>{
+  const file = slot.querySelector('.file');
+  file.addEventListener('change', e=>{
+    const f = e.target.files[0];
+    slot.classList.remove('error');
+    // remove old img
+    const old = slot.querySelector('img'); if(old) old.remove();
+    if(!f) return;
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(f);
+    img.onload = ()=>URL.revokeObjectURL(img.src);
+    slot.appendChild(img);
+  });
+});
+
+// Auto OCR button for Level & Age
+document.getElementById('autoFillBtn').addEventListener('click', async ()=>{
+  // attempt OCR on slot 0 (account) and slot 5 (achievements)
+  const slots = document.querySelectorAll('.slot');
+  const slot0 = slots[0].querySelector('.file').files[0];
+  const slot5 = slots[5].querySelector('.file').files[0];
+
+  if(!slot0 && !slot5){ alert('Please upload screenshots for Account (1) and Achievements (6) for OCR.'); return; }
+
+  if(slot0){
+    document.getElementById('levelConf').innerText = 'Scanning...';
+    try{
+      const lvl = await doOCRExtractNumber(slot0);
+      if(lvl!==null){ document.getElementById('levelInput').value = lvl; document.getElementById('levelConf').innerText = 'Auto-read OK'; }
+      else document.getElementById('levelConf').innerText = 'Auto-read failed — enter manually';
+    }catch(e){ document.getElementById('levelConf').innerText = 'OCR error'; console.error(e); }
+  }
+  if(slot5){
+    document.getElementById('ageConf').innerText = 'Scanning...';
+    try{
+      const age = await doOCRExtractNumber(slot5);
+      if(age!==null){ document.getElementById('ageInput').value = age; document.getElementById('ageConf').innerText = 'Auto-read OK'; }
+      else document.getElementById('ageConf').innerText = 'Auto-read failed — enter manually';
+    }catch(e){ document.getElementById('ageConf').innerText = 'OCR error'; console.error(e); }
+  }
+});
+
+// Perform OCR and try to extract a reasonable integer from text
+async function doOCRExtractNumber(file){
+  // convert file to image element
+  const img = await fileToImage(file);
+  // run tesseract
+  const { data } = await Tesseract.recognize(img, 'eng', { logger: m => {} });
+  const text = (data && data.text) ? data.text : '';
+  // find all numbers
+  const nums = text.match(/\d{1,4}/g);
+  if(!nums) return null;
+  // choose the largest plausible number under 200 (level) or under 50 (age)
+  // heuristics: for account level we expect possibly 1-999, for age maybe 1-30 - but we can't know which slot called; caller should decide
+  // We'll return the largest number found but caller will use context (level vs age).
+  const ints = nums.map(n=>parseInt(n,10)).filter(n=>!isNaN(n));
+  if(ints.length === 0) return null;
+  // prefer number <= 500, else return smallest
+  const plausible = ints.filter(n=>n<=500);
+  return (plausible.length ? Math.max(...plausible) : Math.max(...ints));
+}
+
+// helper: file -> Image
+function fileToImage(file){
+  return new Promise((res, rej)=>{
+    const img = new Image();
+    img.onload = ()=>res(img);
+    img.onerror = rej;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// Analyze button - compute breakdown and show result
+document.getElementById('analyzeBtn').addEventListener('click', ()=>{
+  const slots = document.querySelectorAll('.slot');
+  // basic validation: ensure 6 files uploaded
+  let missing = false;
+  slots.forEach(s=>{
+    if(!s.querySelector('.file').files[0]) { s.classList.add('error'); missing = true; } else s.classList.remove('error');
+  });
+  if(missing){
+    alert('Please upload all 6 screenshots (highlighted in red).');
+    return;
+  }
+
+  // gather inputs
+  const level = parseInt(document.getElementById('levelInput').value||'0',10);
+  const age = parseInt(document.getElementById('ageInput').value||'0',10);
+  const gunsValue = parseFloat(document.getElementById('gunsValue').value||'0');
+  const primeCount = parseInt(document.getElementById('primeCount').value||'0',10);
+  const emoteCount = parseInt(document.getElementById('emoteCount').value||'0',10);
+  const bundleCount = parseInt(document.getElementById('bundleCount').value||'0',10);
+
+  // validate required numeric fields (level, gunsValue at least or gun estimate)
+  let invalid = [];
+  if(!(level>0)) invalid.push('Account Level (enter or use OCR)');
+  if(!(gunsValue>0)) invalid.push('Guns value estimate (enter a number based on guns)');
+  if(invalid.length){
+    alert('Fill required fields:\n- ' + invalid.join('\n- '));
+    return;
+  }
+
+  // price calculations (rule-based)
+  const levelPrice = Math.round(level * WEIGHTS.level_rate); // e.g., 66 * 0.75 ~= 50
+  const gunsPrice = Math.round(gunsValue * WEIGHTS.guns_estimate); // user provides or estimated
+  const primePrice = Math.round(primeCount * WEIGHTS.prime_per);
+  const emotePrice = Math.round(emoteCount * WEIGHTS.emote_per);
+  const bundlePrice = Math.round(bundleCount * WEIGHTS.bundle_per);
+  const agePrice = Math.round(age * WEIGHTS.age_per);
+  const extra = WEIGHTS.extra_fee || 100;
+
+  const subtotal = levelPrice + gunsPrice + primePrice + emotePrice + bundlePrice + agePrice + extra;
+  // produce a realistic min/max: +/- 10% but at least +100 range if very small
+  const min = Math.max(1, Math.round(subtotal * 0.95));
+  const max = Math.round(subtotal * 1.15);
+
+  // build breakdown display
+  const breakdown = {
+    'Level': levelPrice,
+    'Guns (estimated)': gunsPrice,
+    'Prime badges': primePrice,
+    'Emotes': emotePrice,
+    'Bundles': bundlePrice,
+    'Account age': agePrice,
+    'Extra fee': extra
+  };
+
+  showResult(min, max, breakdown);
+});
+
+// render result area including whatsapp link
+function showResult(min, max, breakdown){
+  const area = document.getElementById('resultArea');
+  area.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'result';
+  let html = `<h2 style="margin:0">Estimated Price: ₹ ${min} — ₹ ${max}</h2>`;
+  html += `<div class="smalltxt" style="margin-top:6px">Range = platform estimate. Final price to be confirmed with admin.</div>`;
+  html += '<ul class="break">';
+  for(const k in breakdown){
+    html += `<li>${k} : ₹ ${breakdown[k]}</li>`;
+  }
+  html += '</ul>';
+  // prepare WhatsApp message (prefilled)
+  const admin = ADMIN_NUMBER.replace(/\D/g,''); // digits only
+  const msg = encodeURIComponent(`Hi admin, new FF account analysis result:
+Estimated Price: ₹ ${min} - ₹ ${max}
+Breakdown: ${JSON.stringify(breakdown)}
+Please review.`);
+  const waLink = `https://wa.me/${admin}?text=${msg}`;
+
+  html += `<div style="margin-top:12px"><a class="whatsapp" href="${waLink}" target="_blank">SEND TO ADMIN (WhatsApp)</a></div>`;
+  html += `<div style="margin-top:8px" class="smalltxt">If you want automatic sending without user tap, integrate Twilio/WhatsApp Business API (server-side).</div>`;
+
+  card.innerHTML = html;
+  area.appendChild(card);
+}
+</script>
+</body>
+  </html>                   
